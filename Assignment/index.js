@@ -53,7 +53,7 @@ async function scrapeAllPages(startPage, endPage) {
     const pageData = await scrapePage(pageUrl);
     allLaptopData = allLaptopData.concat(pageData);
 
-    // Add a delay (in milliseconds) between requests to avoid being blocked by Amazon
+   
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
@@ -62,7 +62,7 @@ async function scrapeAllPages(startPage, endPage) {
 
 (async () => {
   const startPage = 1;
-  const endPage = 20; // Adjust the endPage according to the number of pages you want to scrape
+  const endPage = 20; 
 
   const allLaptopData = await scrapeAllPages(startPage, endPage);
 
