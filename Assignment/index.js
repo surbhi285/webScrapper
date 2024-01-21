@@ -1,11 +1,15 @@
 
-const request = require('request-promise');
-const cheerio = require('cheerio');
-const fs = require('fs');
-const json2csv = require('json2csv').Parser;
+const request = require('request-promise'); // used for making http request
+const cheerio = require('cheerio'); // used for parsing HTML
+const fs = require('fs'); // for interacting with file System
+// const csv = require('json2csv').Parser;
 
-const url = "https://www.amazon.in/s?k=laptop&crid=1AQ9PSH4JKERK&sprefix=%2Caps%2C221&ref=nb_sb_ss_recent_2_0_recent";
 
+/* scrapePage is an asynchoronus function that takes url as parameter for sending http request 
+and with help oh cheerio parse html and extract laptop information from amazon. It iterate over each laptop
+entry on the pages and extract information of different attributes and then extracted data is stored in an 
+array and returned
+*/
 async function scrapePage(url) {
   let laptopData = [];
 
@@ -21,12 +25,12 @@ async function scrapePage(url) {
 
   let $ = cheerio.load(response);
 
-  $('div.a-section').each((index, element) => {
+  $('div.a-section').each((element) => {
     let lappy = $(element);
     let Name = lappy.find('h2.a-size-mini.s-line-clamp-1').text();
     let TitleMatch = lappy.find('h2.a-size-mini.a-spacing-none.a-color-base.s-line-clamp-2').text().trim().match(/^(.*?,)/i);
     let Title = TitleMatch ? TitleMatch[1] : '';
-    let category = lappy.find('div#n-title span').text();
+    // let category = lappy.find('div#n-title span').text();
     let Description = lappy.find('h2.a-size-mini.a-spacing-none.a-color-base.s-line-clamp-2').text().trim();
     let MRP = lappy.find('span.a-offscreen').text();
     let Price = extractLastPrice(MRP);
@@ -44,6 +48,10 @@ async function scrapePage(url) {
   return laptopData;
 }
 
+/* scrapeAllPages is used to iterate over differnt pages i.e from start page to end page and it call 
+scrapPage for each page, collects the results and concatenates them into single array . Here we are using 
+delay of 2sec to avoid overloading the server */
+
 async function scrapeAllPages(startPage, endPage) {
   let allLaptopData = [];
 
@@ -60,6 +68,7 @@ async function scrapeAllPages(startPage, endPage) {
   return allLaptopData;
 }
 
+// here scrapped data is then formated into csv file by naming laptop.csv
 (async () => {
   const startPage = 1;
   const endPage = 20; 
@@ -69,7 +78,7 @@ async function scrapeAllPages(startPage, endPage) {
   // Convert the data to a CSV string
   
   const formattedData = allLaptopData.map(product => {
-    return `Name: ${product.Name}\nTitle: ${product.Title}\nDescription: ${product.Description}\nCategory: ${product.category}\nMRP: ${product.Price}\nsellingPrice: ${product.sellingPrice}\nDiscount: ${product.Discount}\nBrandName: ${product.BrandName}\nImage: ${product.Image}\n\n`;
+    return `Name: ${product.Name}\nTitle: ${product.Title}\nDescription: ${product.Description}\nMRP: ${product.Price}\nsellingPrice: ${product.sellingPrice}\nDiscount: ${product.Discount}\nBrandName: ${product.BrandName}\nImage: ${product.Image}\n\n`;
   }).join('\n');
 
   // Write the CSV file
